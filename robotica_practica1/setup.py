@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'practica1 = robotica_practica1.parte1:main',
+            'trayectorias = robotica_practica1.parte1:main_trayectorias',
         ],
     },
 )
