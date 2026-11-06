@@ -40,6 +40,9 @@ POSICIONES_JOINT: List[List[float]] = [
 
 LADO_CUADRADO_M: float = 0.10
 
+RADIO_CIRCULO_M: float = 0.05
+PUNTOS_CIRCULO: int = 36
+
 # TAREA 1: suscriptor 
 class SuscriptorArticulaciones(Node):
     """Nodo que escucha /joint_states y muestra posición y velocidad del brazo."""
@@ -88,6 +91,7 @@ class MultiplesTrayectorias(ControlRobot):
         trayectorias: Dict[str, Callable[[], bool]] = {
             "joint": self._trayectoria_joint,
             "lineal": self._trayectoria_lineal,
+            "circular": self._trayectoria_circular,
         }
         for nombre, ejecutar in trayectorias.items():
             self._ir_a_posicion_inicial()
@@ -132,6 +136,18 @@ class MultiplesTrayectorias(ControlRobot):
         esquina.position.y -= LADO_CUADRADO_M
         cuadrado.append(copy.deepcopy(esquina))
         return self.mover_trayectoria(cuadrado)
+
+    def _trayectoria_circular(self) -> bool:
+        """Movimiento CIRCULAR: la punta recorre un círculo horizontal."""
+        centro: Pose = self.pose_actual()
+        circulo: List[Pose] = []
+        for i in range(PUNTOS_CIRCULO):
+            angulo: float = i * 2 * math.pi / PUNTOS_CIRCULO
+            punto: Pose = copy.deepcopy(centro)
+            punto.position.x += RADIO_CIRCULO_M * math.cos(angulo)
+            punto.position.y += RADIO_CIRCULO_M * math.sin(angulo)
+            circulo.append(punto)
+        return self.mover_trayectoria(circulo)
 
 def main() -> None:
     rclpy.init()
