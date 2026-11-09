@@ -26,6 +26,8 @@ setup(
         'console_scripts': [
             'practica1 = robotica_practica1.parte1:main',
             'trayectorias = robotica_practica1.parte1:main_trayectorias',
+            'grabador = robotica_practica1.parte1:main_grabador',
+            'practica = robotica_practica1.parte1:main_practica',
         ],
     },
 )
