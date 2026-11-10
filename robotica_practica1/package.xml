@@ -4,7 +4,7 @@
   <name>robotica_practica1</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="'inigo.fiat@opendeusto.es'">laboratorio</maintainer>
+  <maintainer email='inigo.fiat@opendeusto.es'>laboratorio</maintainer>
   <license>TODO: License declaration</license>
 
   <depend>rclpy</depend>
@@ -15,6 +15,7 @@
   <depend>control_msgs</depend>
   <depend>shape_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>robotica_interfaces</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
