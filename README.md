@@ -55,3 +55,31 @@ Los datos se guardan en `~/ros_workspace/datos_trayectorias/`, en un CSV por tra
 Durante cada trayectoria se publica su nombre en el topic `/trayectoria_actual`. De esta forma, el nodo que guarda los datos sabe cuándo empieza y cuándo termina cada una.
 
 **Tarea 3.** Guardar la posición, la velocidad y la aceleración de cada articulación con su marca de tiempo, separando cada trayectoria. Hecho creando un CSV por trayectoria. Como la aceleración no viene en `/joint_states`, la calculamos con la diferencia de velocidad entre dos muestras dividida entre el tiempo que pasa entre ellas.
+
+## Parte 2
+
+**Mensaje personalizado.** Hemos creado el mensaje `CinematicaArticulaciones`, que guarda en un solo mensaje la posición, la velocidad y la aceleración de las articulaciones. Se publica en el topic `/cinematica_articulaciones` y se puede consultar con:
+
+```bash
+ros2 topic echo /cinematica_articulaciones robotica_interfaces/msg/CinematicaArticulaciones
+```
+**Ingesta inteligente.** Los datos solo se guardan y se publican mientras el robot está en movimiento. Si todas las articulaciones tienen una velocidad inferior a 0,001 rad/s, se considera que el robot está parado y esas muestras se descartan. Usamos 0,001 y no 0 ya que, aunque el robot esté parado, su velocidad nunca llega a ser 0 del todo.
+
+Esta parte no modifica el código de la Parte 1. La nueva clase hereda del grabador anterior y solo cambia la parte que decide qué datos se guardan.
+
+## Observaciones
+
+- En el proyecto, `/joint_states` llega a unos 3 mensajes por segundo, por lo que cada trayectoria tiene pocas muestras (entre 13 y 18). Por ello, la aceleración calculada es una aproximación.
+- La primera muestra de cada trayectoria tiene aceleración 0, ya que no hay una muestra anterior con la que compararla.
+
+## Reparto del trabajo
+
+Hemos realizado la práctica entre los dos, trabajando juntos todas las tareas. 
+Para mantener limpio el historial de GitHub, hemos intentado que los commits queden lo más ordenados posible.
+Que un commit figure a nombre de uno de nosotros no significa que esa parte la haya hecho solo.
+
+## Uso de la IA
+
+Hemos utilizado un asistente de IA (Claude) unicamente como apoyo durante la práctica. Nos ha servido para aprender ROS 2, para ver ejemplos que nos ayudaran a entender los conceptos y, en algunas ocasiones, para definir cierta funcionalidad.
+
+En ningún momento nos ha facilitado el código entero, el código lo hemos escrito nosotros. La IA ha sido solo una herramienta de apoyo y no la hemos usado para sustituir nuestro criterio.
