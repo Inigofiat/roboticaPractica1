@@ -151,10 +151,10 @@ class MultiplesTrayectorias(ControlRobot):
         centro: Pose = self.pose_actual()
         circulo: List[Pose] = []
         for i in range(PUNTOS_CIRCULO):
-            angulo: float = i * 2 * math.pi / PUNTOS_CIRCULO
+            angulo: float = i * 2 * pi / PUNTOS_CIRCULO
             punto: Pose = copy.deepcopy(centro)
-            punto.position.x += RADIO_CIRCULO_M * math.cos(angulo)
-            punto.position.y += RADIO_CIRCULO_M * math.sin(angulo)
+            punto.position.x += RADIO_CIRCULO_M * cos(angulo)
+            punto.position.y += RADIO_CIRCULO_M * sin(angulo)
             circulo.append(punto)
         return self.mover_trayectoria(circulo)
 
