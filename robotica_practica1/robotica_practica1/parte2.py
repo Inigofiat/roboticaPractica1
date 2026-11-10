@@ -4,15 +4,19 @@ from typing import Dict, List
 
 import rclpy
 from sensor_msgs.msg import JointState
+from robotica_interfaces.msg import CinematicaArticulaciones 
 
 from robotica_practica1.parte1 import (
     ARTICULACIONES,
     INTERVALO_MINIMO_S,
     NANOSEGUNDOS_POR_SEGUNDO,
     PERIODO_LOG_S,
+    TAMANO_COLA,
     GrabadorCinematica,
     MultiplesTrayectorias,
 )
+
+TOPIC_CINEMATICA: str = "/cinematica_articulaciones"
 
 # Por debajo de esta velocidad (rad/s) una articulación se considera quieta.
 # No se usa 0 porque, con el robot parado, la velocidad nunca es exactamente 0.
@@ -22,6 +26,12 @@ UMBRAL_VELOCIDAD: float = 1e-3
 class GrabadorInteligente(GrabadorCinematica):
     """Grabador de la Parte 1 que solo guarda datos cuando el robot se mueve."""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self._publicador_cinematica = self.create_publisher(
+            CinematicaArticulaciones, TOPIC_CINEMATICA, TAMANO_COLA
+        )
+        
     def _guardar_muestra(self, mensaje: JointState) -> None:
         """Igual que en la Parte 1, pero ignorando los periodos en que el robot está quieto."""
         if self._escritor_csv is None:
@@ -65,6 +75,8 @@ class GrabadorInteligente(GrabadorCinematica):
         self._filas_guardadas += 1
         self._tiempo_anterior = tiempo
         self._velocidades_anteriores = velocidades
+        self._publicar_cinematica(mensaje, posiciones, velocidades, aceleraciones)
+
         self.get_logger().info(
             f"'{self._trayectoria_actual}': {self._filas_guardadas} filas guardadas",
             throttle_duration_sec=PERIODO_LOG_S,
@@ -74,6 +86,24 @@ class GrabadorInteligente(GrabadorCinematica):
     def _esta_en_movimiento(velocidades: List[float]) -> bool:
         """True si al menos una articulación supera UMBRAL_VELOCIDAD (en valor absoluto)."""
         return any(abs(velocidad) > UMBRAL_VELOCIDAD for velocidad in velocidades)
+    
+    
+    def _publicar_cinematica(
+        self,
+        mensaje_original: JointState,
+        posiciones: List[float],
+        velocidades: List[float],
+        aceleraciones: List[float],
+    ) -> None:
+        """Empaqueta posición, velocidad y aceleración en un mensaje y lo publica."""
+        mensaje = CinematicaArticulaciones()
+        mensaje.header = mensaje_original.header
+        mensaje.trayectoria = self._trayectoria_actual
+        mensaje.name = list(ARTICULACIONES)
+        mensaje.position = posiciones
+        mensaje.velocity = velocidades
+        mensaje.acceleration = aceleraciones
+        self._publicador_cinematica.publish(mensaje)
 
 
 def main_grabador_inteligente() -> None:
