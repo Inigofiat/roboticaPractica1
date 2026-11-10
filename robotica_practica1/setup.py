@@ -28,6 +28,8 @@ setup(
             'trayectorias = robotica_practica1.parte1:main_trayectorias',
             'grabador = robotica_practica1.parte1:main_grabador',
             'practica = robotica_practica1.parte1:main_practica',
+            'grabador2 = robotica_practica1.parte2:main_grabador_inteligente',
+            'practica2 = robotica_practica1.parte2:main_parte2',
         ],
     },
 )
