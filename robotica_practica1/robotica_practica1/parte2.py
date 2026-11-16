@@ -142,7 +142,5 @@ def main_parte2() -> None:
     trayectorias.destroy_node()
     rclpy.try_shutdown()
 
-
 if __name__ == "__main__":
     main_parte2()
-    
