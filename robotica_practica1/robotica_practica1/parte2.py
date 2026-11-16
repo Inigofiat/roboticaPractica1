@@ -1,11 +1,11 @@
-"""Parte 2 (retos opcionales): ingesta inteligente y mensaje personalizado."""
+"""Parte 2: ingesta inteligente y mensaje personalizado."""
 
 from typing import Dict, List
 
 import rclpy
 from sensor_msgs.msg import JointState
-from robotica_interfaces.msg import CinematicaArticulaciones 
 
+from robotica_interfaces.msg import CinematicaArticulaciones  # type: ignore
 from robotica_practica1.parte1 import (
     ARTICULACIONES,
     INTERVALO_MINIMO_S,
@@ -19,19 +19,20 @@ from robotica_practica1.parte1 import (
 TOPIC_CINEMATICA: str = "/cinematica_articulaciones"
 
 # Por debajo de esta velocidad (rad/s) una articulación se considera quieta.
-# No se usa 0 porque, con el robot parado, la velocidad nunca es exactamente 0.
+# No se usa 0 porque, aunque el robot esté parado, su velocidad nunca llega a ser 0 del todo.
 UMBRAL_VELOCIDAD: float = 1e-3
 
 
 class GrabadorInteligente(GrabadorCinematica):
-    """Grabador de la Parte 1 que solo guarda datos cuando el robot se mueve."""
+    """Grabador de la Parte 1 que solo guarda y publica datos cuando el robot se mueve."""
 
     def __init__(self) -> None:
+        """Crea el grabador de la Parte 1 y el publicador del mensaje personalizado."""
         super().__init__()
         self._publicador_cinematica = self.create_publisher(
             CinematicaArticulaciones, TOPIC_CINEMATICA, TAMANO_COLA
         )
-        
+
     def _guardar_muestra(self, mensaje: JointState) -> None:
         """Igual que en la Parte 1, pero ignorando los periodos en que el robot está quieto."""
         if self._escritor_csv is None:
@@ -46,8 +47,10 @@ class GrabadorInteligente(GrabadorCinematica):
         posiciones: List[float] = [mensaje.position[indice[a]] for a in ARTICULACIONES]
         velocidades: List[float] = [mensaje.velocity[indice[a]] for a in ARTICULACIONES]
 
+        # Reto 2: ingesta inteligente
         if not self._esta_en_movimiento(velocidades):
-            # Se olvida la muestra anterior para no derivar a través de la pausa
+            # Se olvida la muestra anterior para no derivar a través de la pausa:
+            # la aceleración entre antes y después de estar parado no sería real
             self._tiempo_anterior = None
             self.get_logger().info(
                 "Robot quieto: muestras ignoradas", throttle_duration_sec=PERIODO_LOG_S
@@ -58,6 +61,8 @@ class GrabadorInteligente(GrabadorCinematica):
             mensaje.header.stamp.sec
             + mensaje.header.stamp.nanosec / NANOSEGUNDOS_POR_SEGUNDO
         )
+        # El tiempo relativo cuenta desde la primera fila guardada, no desde la
+        # última pausa, por eso se usa el número de filas y no _tiempo_anterior
         if self._filas_guardadas == 0:
             self._tiempo_inicio = tiempo
 
@@ -75,6 +80,8 @@ class GrabadorInteligente(GrabadorCinematica):
         self._filas_guardadas += 1
         self._tiempo_anterior = tiempo
         self._velocidades_anteriores = velocidades
+
+        # Reto 1: enviar la muestra en el mensaje personalizado
         self._publicar_cinematica(mensaje, posiciones, velocidades, aceleraciones)
 
         self.get_logger().info(
@@ -84,10 +91,9 @@ class GrabadorInteligente(GrabadorCinematica):
 
     @staticmethod
     def _esta_en_movimiento(velocidades: List[float]) -> bool:
-        """True si al menos una articulación supera UMBRAL_VELOCIDAD (en valor absoluto)."""
+        """Devuelve True si alguna articulación supera UMBRAL_VELOCIDAD (en valor absoluto)."""
         return any(abs(velocidad) > UMBRAL_VELOCIDAD for velocidad in velocidades)
-    
-    
+
     def _publicar_cinematica(
         self,
         mensaje_original: JointState,
@@ -97,6 +103,7 @@ class GrabadorInteligente(GrabadorCinematica):
     ) -> None:
         """Empaqueta posición, velocidad y aceleración en un mensaje y lo publica."""
         mensaje = CinematicaArticulaciones()
+        # Se reutiliza el header original para conservar la marca de tiempo del dato
         mensaje.header = mensaje_original.header
         mensaje.trayectoria = self._trayectoria_actual
         mensaje.name = list(ARTICULACIONES)
@@ -138,3 +145,4 @@ def main_parte2() -> None:
 
 if __name__ == "__main__":
     main_parte2()
+    
