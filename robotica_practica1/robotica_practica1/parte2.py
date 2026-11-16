@@ -1,22 +1,21 @@
-"""Parte 2: ingesta inteligente y mensaje personalizado."""
+"""Parte 2 (retos opcionales): ingesta inteligente y mensaje personalizado."""
 
 from typing import Dict, List
 
 import rclpy
-from sensor_msgs.msg import JointState
-
 from robotica_interfaces.msg import CinematicaArticulaciones  # type: ignore
 from robotica_practica1.parte1 import (
     ARTICULACIONES,
+    GrabadorCinematica,
     INTERVALO_MINIMO_S,
+    MultiplesTrayectorias,
     NANOSEGUNDOS_POR_SEGUNDO,
     PERIODO_LOG_S,
     TAMANO_COLA,
-    GrabadorCinematica,
-    MultiplesTrayectorias,
 )
+from sensor_msgs.msg import JointState
 
-TOPIC_CINEMATICA: str = "/cinematica_articulaciones"
+TOPIC_CINEMATICA: str = '/cinematica_articulaciones'
 
 # Por debajo de esta velocidad (rad/s) una articulación se considera quieta.
 # No se usa 0 porque, aunque el robot esté parado, su velocidad nunca llega a ser 0 del todo.
@@ -53,7 +52,7 @@ class GrabadorInteligente(GrabadorCinematica):
             # la aceleración entre antes y después de estar parado no sería real
             self._tiempo_anterior = None
             self.get_logger().info(
-                "Robot quieto: muestras ignoradas", throttle_duration_sec=PERIODO_LOG_S
+                'Robot quieto: muestras ignoradas', throttle_duration_sec=PERIODO_LOG_S
             )
             return
 
@@ -142,5 +141,6 @@ def main_parte2() -> None:
     trayectorias.destroy_node()
     rclpy.try_shutdown()
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main_parte2()
